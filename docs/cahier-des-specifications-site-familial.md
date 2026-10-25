@@ -1,6 +1,6 @@
 # Site familial – Cahier des spécifications fonctionnelles
 
-> Version 0.2 – Octobre 2026 – Document de travail
+> Version 0.3 – Octobre 2026 – Document de travail
 
 ---
 
@@ -17,7 +17,7 @@
 | O2 | Offrir une **bibliothèque / cloud familial** de documents et médias | Archives importantes numérisées et retrouvables en moins de 3 clics |
 | O3 | Gérer **finement qui voit quoi** (documents et publications) | Aucun accès non autorisé ; droits gérables par des non-informaticiens |
 | O4 | Être **simple pour tous les âges** et utilisable sur mobile, même avec une connexion lente | Un membre de 70 ans publie une photo sans aide |
-| O5 | Rester **privé** : rien n'est visible publiquement sur Internet | Site fermé, pas de référencement par les moteurs de recherche |
+| O5 | **Présenter la famille au monde** avec une page d'accueil publique, tout en gardant **privé** le reste du site | Seuls les contenus explicitement publiés par le comité sont visibles hors connexion ; aucune donnée personnelle de vivant sans consentement |
 | O6 | Construire et faire vivre l'**arbre généalogique** de la famille, relié aux membres, aux photos et aux archives | 80 % des membres inscrits rattachés à l'arbre 6 mois après l'ouverture |
 
 ### 1.3 Hors périmètre (V1)
@@ -57,6 +57,31 @@ Les droits ne s'attribuent pas personne par personne mais surtout **par groupe**
 ---
 
 ## 4. Spécifications fonctionnelles
+
+### 4.0 Site public (vitrine « Famille Wodie »)
+
+**Principe** : le site a deux espaces.
+- La **vitrine publique**, visible par tout le monde et référencée par les moteurs de recherche. Elle présente la famille.
+- L'**espace famille**, privé et accessible après connexion. Il contient la gazette, le carnet, la bibliothèque, l'arbre détaillé et l'annuaire.
+
+Un contenu n'est **jamais** public par défaut : il le devient par une décision explicite du comité.
+
+| ID | Exigence | Prio |
+|----|----------|------|
+| PUB-01 | **Page d'accueil publique** : présentation de la famille (mot d'accueil, photo de famille, chiffres clés : membres, générations, pays, ancienneté) | M |
+| PUB-02 | **Notre histoire** : récit des origines, frise chronologique des grandes étapes, figures fondatrices (personnes décédées ou ayant donné leur accord) | M |
+| PUB-03 | **Nos racines** : région ou village d'origine, carte de la diaspora au niveau des pays (jamais d'adresse) | S |
+| PUB-04 | **Ce qui nous rassemble** : réunions, entraide et solidarité, mémoire et archives, valeurs de la famille | M |
+| PUB-05 | **Agenda public** : annonce des grands rendez-vous (date, ville). Les détails pratiques restent dans l'espace famille | S |
+| PUB-06 | **« Vous êtes de la famille ? »** : formulaire de **demande d'adhésion** (nom, parent de rattachement, e-mail) qui alimente la file de validation des référents (CPT-03) | M |
+| PUB-07 | Bouton **« Espace famille / Se connecter »** visible sur toutes les pages publiques | M |
+| PUB-08 | **Formulaire de contact** protégé contre les robots (captcha respectueux de la vie privée), messages transmis au comité | S |
+| PUB-09 | Les pages publiques sont **éditables par les administrateurs** (petit gestionnaire de contenu) : textes, photos, frise, chiffres | M |
+| PUB-10 | **Publication publique contrôlée** : seuls les administrateurs et le comité peuvent passer un contenu (article de la gazette, photo, document) en visibilité « Public », avec confirmation explicite et entrée dans le journal d'audit | M |
+| PUB-11 | **Garde-fous** : pas de mineurs identifiables, pas de dates ni de lieux précis concernant des vivants, pas de coordonnées. Consentement écrit des personnes reconnaissables sur une photo publique | M |
+| PUB-12 | **Référencement** : balises SEO et Open Graph (partage d'un joli aperçu sur les réseaux), sitemap pour les pages publiques uniquement ; `noindex` sur tout l'espace famille | S |
+| PUB-13 | Mentions légales, politique de confidentialité, gestion des cookies (mesure d'audience sans cookie de préférence) | M |
+| PUB-14 | Arbre public simplifié et facultatif : uniquement les ancêtres décédés, sur quelques générations | C |
 
 Priorités : **M** = indispensable (V1), **S** = souhaitable (V1 si possible), **C** = plus tard (V2+).
 
@@ -135,6 +160,7 @@ Priorités : **M** = indispensable (V1), **S** = souhaitable (V1 si possible), *
 | 🔵 **Groupe(s)** | Les membres d'un ou plusieurs groupes choisis (branche, comité…) |
 | 🟠 **Restreint** | Une liste nominative de personnes |
 | 🔴 **Privé** | Le déposant (et les admins, en cas de besoin) |
+| 🌐 **Public** | Tout le monde sur Internet (vitrine) — réservé aux administrateurs et au comité, confirmation obligatoire (PUB-10) |
 
 #### Droits possibles sur un dossier ou un document
 | Droit | Effet |
@@ -233,7 +259,7 @@ Priorités : **M** = indispensable (V1), **S** = souhaitable (V1 si possible), *
 
 | Domaine | Exigence |
 |---------|----------|
-| **Accès** | Site **entièrement privé** : aucune page n'est publique hormis la connexion, et le site n'est pas indexé par les moteurs de recherche |
+| **Accès** | **Vitrine publique** (accueil, histoire, racines, agenda public, adhésion, contact) indexée par les moteurs de recherche. **Tout le reste est privé** : connexion obligatoire et `noindex` |
 | **Plateformes** | Responsive et mobile d'abord ; **application installable (PWA)** au minimum, applications natives iOS/Android en option |
 | **Langues** | Français en V1 ; anglais (et autres langues de la diaspora) en option. Dates et heures affichées dans le fuseau de chaque utilisateur |
 | **Performance** | Utilisable avec une connexion 3G : images optimisées, vidéos adaptatives, chargement progressif du fil |

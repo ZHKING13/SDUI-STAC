@@ -1,6 +1,6 @@
 # Site familial – Charte graphique
 
-> Version 0.2 – Octobre 2026 – Direction « **La Gazette de la famille** »
+> Version 0.3 – Octobre 2026 – Famille **Wodie** · direction « **La Gazette de la famille** »
 > Maquettes : [canevas « Site familial – Charte et maquettes »](https://claude.ai/artifact/FwURo1LVsM51WFocSYHPBS)
 >
 > La v0.1 (cartes arrondies, pastilles colorées, compteurs de « j'aime », bouton flottant, barre d'onglets) a été jugée **trop « réseau social »**. La v0.2 s'inspire du journal de famille et de l'archive (style « Editorial Grid / Magazine » du skill ui-ux-pro-max).
@@ -60,6 +60,21 @@ Ornements autorisés : lettrine d'article, citation en italique avec filet d'acc
 - **Avis de décès** : faire-part sobre en gris, portrait ovale, obsèques, lien vers la fiche de l'arbre, **livre de condoléances** (aucune réaction).
 - **Agenda / invitation** : carton à double filet (« Vous êtes invités »), heure dans plusieurs fuseaux, réponse Je viens / Peut-être / Absent.
 - **Archives et arbre** : mêmes en-têtes (titre du journal + rubriques soulignées), contenus en tableaux et filets. Les outils (panneau des droits, arbre) gardent une interface fonctionnelle, mais sans ombres ni arrondis.
+
+## 5 bis. Vitrine publique « Famille Wodie »
+
+La page d'accueil publique est la **porte d'entrée** pour tout le monde, membres ou non. Elle reprend la charte de la gazette dans une version plus aérée :
+- **En-tête** : le mot « Famille Wodie » en Newsreader, des rubriques (Notre histoire, Nos racines, Ce qui nous rassemble, Contact) et un bouton « Espace famille » marqué d'un cadenas.
+- **Ouverture** : titre de 60 px, mot d'accueil, deux boutons (« Découvrir notre histoire », « Vous êtes de la famille ? ») et une grande photo de famille légendée, publiée avec l'accord des personnes présentes.
+- **Chiffres clés** entre un double filet et un filet simple : membres, générations, pays, première trace connue.
+- **Notre histoire** : récit avec lettrine, citation et frise des grandes étapes.
+- **Nos racines** : carte de la diaspora sur fond vélin, au niveau des pays seulement.
+- **Ce qui nous rassemble** : trois colonnes (réunions, entraide, mémoire).
+- **Prochain rendez-vous** : carton à double filet avec la date et la ville ; les détails restent dans l'espace famille.
+- **Rejoindre** : bandeau encre (`#1F1B18`, accent `#E08A66`) avec le formulaire de demande d'adhésion (nom, e-mail, lien avec la famille).
+- **Pied de page** : contact, mentions légales, confidentialité, « Les informations des membres ne sont jamais publiques ».
+
+Règles propres à la vitrine : aucune donnée de personne vivante sans consentement, pas d'enfants identifiables, pas d'adresse. Les textes entre crochets dans la maquette ([N], [lieu], [année]…) sont à remplir par la famille.
 
 ## 6. Composants
 

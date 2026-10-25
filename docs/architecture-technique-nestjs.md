@@ -1,6 +1,6 @@
 # Site familial – Architecture technique « from scratch » (backend NestJS)
 
-> Version 0.2 – Octobre 2026 – Complète le [cahier des spécifications fonctionnelles](./cahier-des-specifications-site-familial.md) (proposition D)
+> Version 0.3 – Octobre 2026 – Complète le [cahier des spécifications fonctionnelles](./cahier-des-specifications-site-familial.md) (proposition D)
 
 ---
 
@@ -95,7 +95,8 @@ family/
 |--------|----------------|
 | `AuthModule` | Connexion, lien magique, rafraîchissement des jetons, 2FA TOTP, sessions |
 | `MembersModule` | Profils, annuaire, validation des inscriptions, comptes junior et mémoriaux |
-| `InvitationsModule` | Invitations, demandes d'adhésion, parrainage |
+| `InvitationsModule` | Invitations, demandes d'adhésion (y compris depuis la vitrine publique), parrainage |
+| `PublicSiteModule` | Contenus de la vitrine (pages, sections, frise, chiffres clés), contact, endpoints publics en lecture seule mis en cache |
 | `GroupsModule` | Branches, comités, groupes ad hoc, adhésions |
 | `GenealogyModule` | Personnes, filiations, unions, table de fermeture, liens de parenté, branches automatiques, confidentialité des vivants, propositions de modification, GEDCOM (§6) |
 | `PermissionsModule` | **Moteur d'autorisations** (ACL, héritage, cache, guards) |
@@ -131,13 +132,13 @@ Les modules communiquent par **appels de service** pour les lectures et par **é
 Pour un membre **U** et une ressource **R** :
 
 1. Si U a le rôle `SUPER_ADMIN` ou `ADMIN` → `MANAGE`, mais l'accès « hors droits » à un contenu restreint est **journalisé**.
-2. On calcule `principaux(U) = {member:U} ∪ {group:G | U ∈ G} ∪ {family}`.
+2. On calcule `principaux(U) = {member:U} ∪ {group:G | U ∈ G} ∪ {family} ∪ {public}`. Un visiteur **anonyme** n'a que `{public}`.
 3. On remonte la chaîne `R → parent → … → racine`, en s'arrêtant **après** le premier nœud dont `inheritPermissions = false`.
 4. On garde les entrées ACL de ces nœuds dont le principal appartient à `principaux(U)` et qui ne sont pas expirées.
 5. Le **propriétaire** (déposant) a au minimum `EDIT` sur ce qu'il a créé.
 6. Droit effectif = **maximum** des niveaux retenus, ou *aucun* (la ressource est alors **invisible**, et l'API répond 404, jamais 403, pour ne pas révéler son existence).
 
-Publications et événements : une publication porte une **audience** (`FAMILY`, liste de groupes, liste de membres, ou `PRIVATE`) qui se traduit en entrées ACL `VIEW`. On réutilise ainsi un seul moteur.
+Publications et événements : une publication porte une **audience** (`PUBLIC`, `FAMILY`, liste de groupes, liste de membres, ou `PRIVATE`) qui se traduit en entrées ACL `VIEW`. On réutilise ainsi un seul moteur.
 
 ### 5.3 Stockage et performance
 
@@ -362,7 +363,7 @@ enum MemberStatus  { PENDING ACTIVE SUSPENDED DECEASED DELETED }
 enum GroupType     { BRANCH GENERATION LOCATION COMMITTEE ADHOC }
 enum PostType      { BIRTH DEATH WEDDING EVENT ANNOUNCEMENT ACHIEVEMENT MEMORY FREE }
 enum ResourceType  { FOLDER DOCUMENT ALBUM MEDIA POST EVENT }
-enum PrincipalType { MEMBER GROUP FAMILY }
+enum PrincipalType { MEMBER GROUP FAMILY PUBLIC }
 enum FileStatus    { UPLOADING SCANNING PROCESSING READY REJECTED }
 enum MembershipSource { MANUAL TREE }
 enum Sex           { MALE FEMALE OTHER UNKNOWN }
@@ -503,7 +504,7 @@ model AclEntry {
 model EffectiveAccess {                         // table dérivée, recalculée par le worker
   resourceType ResourceType
   resourceId   String
-  principalKey String                           // 'member:<id>' | 'group:<id>' | 'family'
+  principalKey String                           // 'member:<id>' | 'group:<id>' | 'family' | 'public'
   level        Int
   @@id([resourceType, resourceId, principalKey])
   @@index([principalKey, resourceType])
@@ -688,6 +689,7 @@ Préfixe `/api/v1`. Documentation Swagger sur `/api/docs` (accès réservé aux 
 | Domaine | Endpoints |
 |---------|-----------|
 | Auth | `POST /auth/login`, `POST /auth/magic-link`, `POST /auth/magic-link/verify`, `POST /auth/refresh`, `POST /auth/logout`, `POST /auth/2fa/setup`, `POST /auth/2fa/verify` |
+| Vitrine (public) | `GET /public/pages/:slug`, `GET /public/timeline`, `GET /public/events`, `GET /public/posts` (contenus `PUBLIC` uniquement), `POST /public/join-requests` (captcha), `POST /public/contact` (captcha) ; admin : `PUT /admin/public/pages/:slug`, `POST /admin/public/publish/:type/:id` |
 | Invitations | `POST /invitations`, `GET /invitations/:token`, `POST /join-requests`, `POST /join-requests/:id/approve` |
 | Membres | `GET /members?q=&branch=&country=`, `GET /members/:id`, `PATCH /members/me`, `GET /members/me/export` |
 | Groupes | `GET /groups`, `POST /groups`, `POST /groups/:id/members`, `DELETE /groups/:id/members/:memberId` |
@@ -712,7 +714,8 @@ Conventions : pagination par **curseur** ; les erreurs suivent la RFC 9457 (`pro
 | Sujet | Mesure |
 |-------|--------|
 | Transport | HTTPS partout (Caddy + Let's Encrypt), HSTS |
-| En-têtes | `@fastify/helmet`, CSP stricte côté web, `X-Robots-Tag: noindex` |
+| En-têtes | `@fastify/helmet`, CSP stricte côté web ; `X-Robots-Tag: noindex` sur l'espace famille et l'API, indexation autorisée uniquement sur les pages de la vitrine |
+| Vitrine publique | Lecture seule, pages générées statiquement (ISR de Next.js) et mises en cache CDN ; les endpoints publics ne lisent que des ressources dont `effective_access` contient `public` ; passage en `PUBLIC` réservé aux admins, avec double confirmation et audit ; captcha (Cloudflare Turnstile ou hCaptcha) et limitation de débit sur l'adhésion et le contact ; les médias publics sont servis depuis un préfixe S3 distinct, les médias privés n'ont jamais d'URL publique |
 | Entrées | Validation avec zod (`nestjs-zod`) sur tous les DTO ; contenu riche nettoyé côté serveur (liste blanche des nœuds autorisés) |
 | Fichiers | Liste blanche de types MIME, vérification des magic bytes, ClamAV, buckets **privés** uniquement, aucune URL publique |
 | Secrets | Variables d'environnement chiffrées (SOPS ou gestionnaire de secrets de l'hébergeur), rotation des clés S3 |
@@ -768,7 +771,7 @@ Estimation pour **1 développeur full-stack expérimenté**, ou 2 développeurs 
 | Sprint (2 semaines) | Contenu |
 |---------------------|---------|
 | S1 | Monorepo, CI, infrastructure locale, schéma Prisma de base, authentification (lien magique, JWT, sessions) |
-| S2 | Membres, invitations, validation, groupes, annuaire ; squelette web Next.js |
+| S2 | Membres, invitations, validation, groupes, annuaire ; squelette web Next.js ; **vitrine publique** (pages éditables, demande d'adhésion, contact) |
 | S3 | **Moteur d'autorisations** (ACL, héritage, `effective_access`, guards, tests) |
 | S4 | **Généalogie 1** : personnes, filiations, unions, dates généalogiques, table de fermeture, anti-cycle, fiches, historique, `GenealogyPolicy` et propositions, rattachement à l'inscription |
 | S5 | **Généalogie 2** : arbre interactif, lien de parenté, branches automatiques, confidentialité des vivants, import/export GEDCOM, doublons et fusion |
