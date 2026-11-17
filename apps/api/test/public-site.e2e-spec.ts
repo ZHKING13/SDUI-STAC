@@ -5,6 +5,7 @@ import { defaultHomeContent, defaultLegalNotice } from '@famille/shared';
 import { AppModule } from '../src/app.module';
 import { configureApp } from '../src/app.factory';
 import { PrismaService } from '../src/prisma/prisma.service';
+import { resetDatabase } from './helpers';
 
 const TEST_DATABASE_URL =
   process.env.TEST_DATABASE_URL ?? 'postgresql://famille:famille@localhost:5432/famille_test';
@@ -30,9 +31,7 @@ describe('Vitrine publique (API)', () => {
   });
 
   beforeEach(async () => {
-    await prisma.joinRequest.deleteMany();
-    await prisma.contactMessage.deleteMany();
-    await prisma.publicPage.deleteMany();
+    await resetDatabase(prisma);
   });
 
   afterAll(async () => {

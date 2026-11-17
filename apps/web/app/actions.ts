@@ -10,13 +10,8 @@ import {
 import type { ZodTypeAny } from 'zod';
 import { API_URL } from '@/lib/api';
 
-export interface FormState {
-  status: 'idle' | 'success' | 'error';
-  message?: string;
-  errors?: FieldErrors;
-  /** Valeurs saisies, renvoyées pour ne pas vider le formulaire en cas d'erreur. */
-  values?: Record<string, string>;
-}
+export type { FormState } from '@/lib/form-state';
+import type { FormState } from '@/lib/form-state';
 
 const GENERIC_ERROR = "L'envoi n'a pas abouti. Merci de réessayer dans quelques minutes.";
 

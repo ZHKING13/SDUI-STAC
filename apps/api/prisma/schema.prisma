@@ -34,6 +34,8 @@ model JoinRequest {
   status       JoinRequestStatus @default(PENDING)
   createdAt    DateTime          @default(now())
   reviewedAt   DateTime?
+  reviewedById String?
+  reviewedBy   Member?           @relation("ReviewedBy", fields: [reviewedById], references: [id], onDelete: SetNull)
 
   @@index([status, createdAt])
 }
@@ -48,4 +50,119 @@ model ContactMessage {
   createdAt DateTime @default(now())
 
   @@index([handled, createdAt])
+}
+
+// ---------- Lot 2 : comptes, groupes, invitations ----------
+
+enum Role {
+  MEMBER
+  MODERATOR // référent de branche : valide les demandes et les invitations
+  ADMIN
+}
+
+enum MemberStatus {
+  ACTIVE
+  SUSPENDED
+}
+
+/// Visibilité d'une coordonnée dans l'annuaire.
+enum FieldVisibility {
+  FAMILY // tous les membres
+  PRIVATE // le membre et les administrateurs
+}
+
+model Member {
+  id                   String          @id @default(uuid())
+  email                String          @unique
+  passwordHash         String?
+  firstName            String
+  lastName             String
+  birthName            String?
+  country              String?
+  city                 String?
+  phone                String?
+  phoneVisibility      FieldVisibility @default(PRIVATE)
+  emailVisibility      FieldVisibility @default(FAMILY)
+  role                 Role            @default(MEMBER)
+  status               MemberStatus    @default(ACTIVE)
+  createdAt            DateTime        @default(now())
+  updatedAt            DateTime        @updatedAt
+  lastLoginAt          DateTime?
+  sessions             Session[]
+  loginTokens          LoginToken[]
+  memberships          Membership[]
+  invitationsSent      Invitation[]    @relation("InvitedBy")
+  joinRequestsReviewed JoinRequest[]   @relation("ReviewedBy")
+
+  @@index([lastName, firstName])
+}
+
+/// Session ouverte ; seul le condensat du jeton est stocké.
+model Session {
+  id        String    @id @default(uuid())
+  tokenHash String    @unique
+  memberId  String
+  member    Member    @relation(fields: [memberId], references: [id], onDelete: Cascade)
+  createdAt DateTime  @default(now())
+  expiresAt DateTime
+  revokedAt DateTime?
+  userAgent String?
+
+  @@index([memberId])
+}
+
+/// Lien de connexion à usage unique envoyé par e-mail (« lien magique »).
+model LoginToken {
+  id        String    @id @default(uuid())
+  tokenHash String    @unique
+  memberId  String
+  member    Member    @relation(fields: [memberId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+}
+
+enum GroupType {
+  BRANCH
+  COMMITTEE
+  LOCATION
+  ADHOC
+}
+
+model Group {
+  id          String       @id @default(uuid())
+  name        String       @unique
+  type        GroupType
+  description String       @default("")
+  createdAt   DateTime     @default(now())
+  memberships Membership[]
+}
+
+model Membership {
+  memberId  String
+  groupId   String
+  isManager Boolean  @default(false)
+  createdAt DateTime @default(now())
+  member    Member   @relation(fields: [memberId], references: [id], onDelete: Cascade)
+  group     Group    @relation(fields: [groupId], references: [id], onDelete: Cascade)
+
+  @@id([memberId, groupId])
+  @@index([groupId])
+}
+
+/// Invitation envoyée par e-mail ; le compte est créé à l'acceptation.
+model Invitation {
+  id          String    @id @default(uuid())
+  tokenHash   String    @unique
+  email       String
+  firstName   String
+  lastName    String
+  groupIds    String[]
+  invitedById String?
+  invitedBy   Member?   @relation("InvitedBy", fields: [invitedById], references: [id], onDelete: SetNull)
+  expiresAt   DateTime
+  acceptedAt  DateTime?
+  createdAt   DateTime  @default(now())
+
+  @@index([email])
 }

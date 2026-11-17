@@ -5,7 +5,7 @@ interface FormFieldProps {
   label: string;
   errors?: FieldErrors;
   defaultValue?: string;
-  type?: 'text' | 'email';
+  type?: 'text' | 'email' | 'password' | 'tel';
   multiline?: boolean;
   hint?: string;
   autoComplete?: string;

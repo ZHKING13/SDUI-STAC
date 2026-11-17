@@ -10,7 +10,8 @@
     "test": "jest --runInBand",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate deploy",
-    "prisma:seed": "tsx prisma/seed.ts"
+    "prisma:seed": "tsx prisma/seed.ts",
+    "admin:create": "tsx --env-file-if-exists=.env prisma/create-admin.ts"
   },
   "dependencies": {
     "@famille/shared": "workspace:*",
@@ -23,7 +24,9 @@
     "fastify": "5.12.8",
     "reflect-metadata": "0.2.2",
     "rxjs": "7.8.2",
-    "zod": "3.25.76"
+    "zod": "3.25.76",
+    "argon2": "0.44.0",
+    "nodemailer": "7.0.13"
   },
   "devDependencies": {
     "@nestjs/cli": "11.0.24",
@@ -34,13 +37,20 @@
     "prisma": "6.19.3",
     "ts-jest": "29.4.15",
     "tsx": "4.20.6",
-    "typescript": "5.9.3"
+    "typescript": "5.9.3",
+    "@types/nodemailer": "7.0.12"
   },
   "jest": {
-    "moduleFileExtensions": ["js", "json", "ts"],
+    "moduleFileExtensions": [
+      "js",
+      "json",
+      "ts"
+    ],
     "rootDir": ".",
     "testRegex": "(test|src)/.*\\.(spec|e2e-spec)\\.ts$",
-    "transform": { "^.+\\.ts$": "ts-jest" },
+    "transform": {
+      "^.+\\.ts$": "ts-jest"
+    },
     "testEnvironment": "node"
   }
 }
