@@ -1,0 +1,14 @@
+# Base de données locale pour le développement : docker compose up -d
+services:
+  postgres:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: famille
+      POSTGRES_PASSWORD: famille
+      POSTGRES_DB: famille
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+volumes:
+  pgdata:

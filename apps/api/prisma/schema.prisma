@@ -1,0 +1,51 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+/// Pages de la vitrine publique (accueil, mentions légales, confidentialité).
+/// Le contenu est un JSON validé par les schémas de @famille/shared.
+model PublicPage {
+  slug      String   @id
+  title     String
+  content   Json
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+enum JoinRequestStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+/// Demande d'adhésion envoyée depuis la vitrine (exigence PUB-06),
+/// traitée ensuite par un référent de branche.
+model JoinRequest {
+  id           String            @id @default(uuid())
+  fullName     String
+  email        String
+  relationship String
+  message      String            @default("")
+  status       JoinRequestStatus @default(PENDING)
+  createdAt    DateTime          @default(now())
+  reviewedAt   DateTime?
+
+  @@index([status, createdAt])
+}
+
+/// Message envoyé depuis le formulaire de contact (exigence PUB-08).
+model ContactMessage {
+  id        String   @id @default(uuid())
+  name      String
+  email     String
+  message   String
+  handled   Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@index([handled, createdAt])
+}
